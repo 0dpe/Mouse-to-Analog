@@ -46,7 +46,6 @@ def on_click(x, y, button, pressed):
     global neutral
     if button == RESET_BUTTON and pressed == True:
         neutral = max(SENSITIVITY, min(SCREEN_WIDTH - SENSITIVITY, x))
-        print(neutral)
         mouse = Controller()
         mouse.position = (neutral, y)
 

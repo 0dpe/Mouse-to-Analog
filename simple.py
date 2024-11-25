@@ -1,7 +1,7 @@
 import vgamepad
 from pynput import mouse
 
-SCREEN_X = 1919
+SCREEN_X = 1920
 
 g = vgamepad.VX360Gamepad()
 def on_move(x, _):

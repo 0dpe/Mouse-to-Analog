@@ -4,8 +4,7 @@ from pynput.mouse import Button, Controller, Listener # https://pynput.readthedo
 # Fixes inconsistent coordinate scaling on Windows
 # https://pynput.readthedocs.io/en/stable/mouse.html#ensuring-consistent-coordinates-between-listener-and-controller-on-windows
 import ctypes
-PROCESS_PER_MONITOR_DPI_AWARE = 2
-ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 
 # Screen width in pixels
@@ -21,36 +20,51 @@ SENSITIVITY = 200
 # This will reposition the mouse pointer if any part of its range of positions that produce joystick tilts clips the edge of the screen
 RESET_BUTTON = Button.right
 
+# Mouse button to toggle pause this script
+PAUSE_BUTTON = Button.middle
 
-neutral = round(SCREEN_WIDTH / 2)
+
+neutral = SCREEN_WIDTH // 2
+pause = False
 gamepad = vgamepad.VX360Gamepad()
+mouse = Controller()
 
 def on_move(x, y):
-    x = max(0, min(SCREEN_WIDTH, x))
+    if not pause:
+        x = max(0, min(SCREEN_WIDTH, x))
 
-    global neutral
-    if abs(x - neutral) < SENSITIVITY:
-        joystick_tilt = round(((x - neutral) * 65535) / (SENSITIVITY * 2))
-    else:
-        if x < neutral:
-            neutral = x + SENSITIVITY
-            joystick_tilt = -32768
-        elif x > neutral:
-            neutral = x - SENSITIVITY
-            joystick_tilt = 32767
-    
-    gamepad.right_joystick(joystick_tilt, 0)
-    gamepad.update()
+        global neutral
+        if abs(x - neutral) < SENSITIVITY:
+            joystick_tilt = round(((x - neutral) * 65535) / (SENSITIVITY * 2))
+        else:
+            if x < neutral:
+                neutral = x + SENSITIVITY
+                joystick_tilt = -32768
+            elif x > neutral:
+                neutral = x - SENSITIVITY
+                joystick_tilt = 32767
+        
+        gamepad.right_joystick(joystick_tilt, 0)
+        gamepad.update()
 
-def on_click(x, y, button, pressed):
-    global neutral
-    if button == RESET_BUTTON and pressed == True:
+def reset(x, y):
+    if not pause:
+        global neutral
         neutral = max(SENSITIVITY, min(SCREEN_WIDTH - SENSITIVITY, x))
-        mouse = Controller()
         mouse.position = (neutral, y)
 
-listener = Listener(
-    on_move=on_move,
-    on_click=on_click)
-listener.start()
-listener.join()
+def on_click(x, y, button, pressed):
+    if pressed:
+        if button == RESET_BUTTON:
+            reset(x, y)
+        if button == PAUSE_BUTTON:
+            global pause
+            pause = not pause
+            if pause:
+                gamepad.right_joystick(0, 0)
+                gamepad.update()
+            else:
+                reset(x, y)
+
+with Listener(on_move=on_move, on_click=on_click) as listener:
+    listener.join()

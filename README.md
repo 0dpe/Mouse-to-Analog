@@ -3,5 +3,5 @@ Translate mouse pointer positions to gamepad/controller analog joystick input fo
 
 Install Python libraries:
 ```
-pip install --upgrade vgamepad pynput ctypes
+pip install --upgrade vgamepad pynput
 ```

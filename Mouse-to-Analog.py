@@ -14,7 +14,7 @@ SCREEN_WIDTH = 2559
 # Number of pixels mouse pointer should move to produce a maximum joystick tilt
 # Larger values = less sensitive, smaller values = more sensitive
 # Shouldn't exceed half of SCREEN_WIDTH, otherwise you won't be able to produce maximum joystick tilts
-SENSITIVITY = 700
+SENSITIVITY = 500
 
 # Mouse button to reset current mouse pointer position to zero joystick tilt
 # This will reposition the mouse pointer if any part of its range of positions that produce joystick tilts clips the edge of the screen

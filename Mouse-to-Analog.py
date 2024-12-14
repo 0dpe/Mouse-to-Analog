@@ -1,5 +1,5 @@
 import vgamepad # https://github.com/yannbouteiller/vgamepad/
-from pynput.mouse import Button, Controller, Listener # https://pynput.readthedocs.io/en/stable/
+from pynput import mouse, keyboard # https://pynput.readthedocs.io/en/stable/
 
 # Fixes inconsistent coordinate scaling on Windows
 # https://pynput.readthedocs.io/en/stable/mouse.html#ensuring-consistent-coordinates-between-listener-and-controller-on-windows
@@ -16,18 +16,18 @@ SCREEN_WIDTH = 2559
 # Shouldn't exceed half of SCREEN_WIDTH, otherwise you won't be able to produce maximum joystick tilts
 SENSITIVITY = 500
 
-# Mouse button to reset current mouse pointer position to zero joystick tilt
+# (mouse, keyboard) buttons to reset current mouse pointer position to zero joystick tilt
 # This will reposition the mouse pointer if any part of its range of positions that produce joystick tilts clips the edge of the screen
-RESET_BUTTON = Button.right
+RESET_BUTTON = mouse.Button.right, 'r'
 
 # Mouse button to toggle pause this script
-PAUSE_BUTTON = Button.middle
+PAUSE_BUTTON = mouse.Button.middle
 
 
 neutral = SCREEN_WIDTH // 2
 pause = False
 gamepad = vgamepad.VX360Gamepad()
-mouse = Controller()
+mouse_controller = mouse.Controller()
 
 def on_move(x, y):
     if not pause:
@@ -51,11 +51,11 @@ def reset(x, y):
     if not pause:
         global neutral
         neutral = max(SENSITIVITY, min(SCREEN_WIDTH - SENSITIVITY, x))
-        mouse.position = (neutral, y)
+        mouse_controller.position = (neutral, y)
 
 def on_click(x, y, button, pressed):
     if pressed:
-        if button == RESET_BUTTON:
+        if button == RESET_BUTTON[0]:
             reset(x, y)
         if button == PAUSE_BUTTON:
             global pause
@@ -66,5 +66,14 @@ def on_click(x, y, button, pressed):
             else:
                 reset(x, y)
 
-with Listener(on_move=on_move, on_click=on_click) as listener:
-    listener.join()
+def on_press(key):
+    if str(key) == f"'{RESET_BUTTON[1]}'":
+        reset(*mouse_controller.position)
+
+mouse_listener = mouse.Listener(on_move=on_move, on_click=on_click)
+mouse_listener.start()
+keyboard_listener = keyboard.Listener(on_press=on_press)
+keyboard_listener.start()
+
+mouse_listener.join()
+keyboard_listener.join()

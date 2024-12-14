@@ -1,5 +1,6 @@
 import vgamepad # https://github.com/yannbouteiller/vgamepad/
 from pynput import mouse, keyboard # https://pynput.readthedocs.io/en/stable/
+import time
 
 # Fixes inconsistent coordinate scaling on Windows
 # https://pynput.readthedocs.io/en/stable/mouse.html#ensuring-consistent-coordinates-between-listener-and-controller-on-windows
@@ -19,6 +20,11 @@ SENSITIVITY = 500
 # (mouse, keyboard) buttons to reset current mouse pointer position to zero joystick tilt
 # This will reposition the mouse pointer if any part of its range of positions that produce joystick tilts clips the edge of the screen
 RESET_BUTTON = mouse.Button.right, 'r'
+
+# Seconds to wait before registering the RESET_BUTTON
+# Only happens when the keyboard RESET_BUTTON is pressed; the mouse RESET_BUTTON registers instantly
+# For Trackmania 2020, the start countdown is 1.5 seconds; this setting allows steering to reset to 0 exactly when the countdown ends
+RESET_DELAY = 1.5
 
 # Mouse button to toggle pause this script
 PAUSE_BUTTON = mouse.Button.middle
@@ -68,6 +74,7 @@ def on_click(x, y, button, pressed):
 
 def on_press(key):
     if str(key) == f"'{RESET_BUTTON[1]}'":
+        time.sleep(RESET_DELAY)
         reset(*mouse_controller.position)
 
 mouse_listener = mouse.Listener(on_move=on_move, on_click=on_click)
